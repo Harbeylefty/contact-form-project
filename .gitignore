@@ -1,0 +1,7 @@
+# Python (for Lambda function)
+__pycache__/
+*.pyc
+*.pyo
+*.py[cod]
+.venv/
+venv/

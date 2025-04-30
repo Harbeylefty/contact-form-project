@@ -1,0 +1,17 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowDynamoDBAndSNSAccess",
+            "Effect": "Allow",
+            "Action": [
+                "sns:Publish",
+                "dynamodb:PutItem"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/ContactFormSubmissions",
+                "arn:aws:sns:REGION:ACCOUNT_ID:ContactFormTopic"
+            ]
+        }
+    ]
+}
