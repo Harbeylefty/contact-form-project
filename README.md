@@ -1,63 +1,48 @@
-Serverless Contact Form with AWS: Lambda, DynamoDB, API Gateway, and SNS
-Project Overview
-This project is a serverless contact form system that processes user submissions without managing servers. It uses AWS Lambda, API Gateway, DynamoDB, and SNS to handle data, store it securely, and send real-time notifications. Submissions are captured, saved to DynamoDB, and an admin notification is sent via SNS. The system is scalable, low-maintenance, and secure, using IAM roles with least privilege.
-Highlights
+Serverless Contact Form with AWS
+A serverless contact form using AWS Lambda, API Gateway, DynamoDB, and SNS to capture submissions, store them securely, and send admin notifications. Built for my portfolio to showcase DevOps skills.
+Architecture
 
-Captures user form submissions
-API Gateway triggers Lambda on form submission
-Lambda processes and stores data in DynamoDB
-SNS sends real-time email notifications to the admin
-Secures access with IAM roles following least privilege
+Features
+
+S3-hosted frontend (index.html) for form submissions
+API Gateway and Lambda (Python) for processing
+DynamoDB (ContactFormSubmissions) for storage
+SNS (ContactFormTopic) for email notifications
+IAM roles with least privilege for security
+Runs in AWS free tier
 
 Prerequisites
 
 AWS Account
-Basic knowledge of AWS services (Lambda, API Gateway, IAM, DynamoDB, SNS, S3)
-Familiarity with Python for the Lambda function
-Ability to manage IAM roles, policies, and resources
-Understanding of CORS and HTTP basics for API Gateway
+Basic knowledge of AWS (Lambda, API Gateway, IAM, DynamoDB, SNS, S3)
+Familiarity with Python
+Understanding of CORS and HTTP basics
 
-Setup Instructions
-Follow these steps to set up the project, creating resources in the order they’re needed.
-Clone the Repository
-Clone this repository to get started:  
+Setup
+Clone the repo:  
 git clone https://github.com/Harbeylefty/contact-form-project.git
 cd contact-form-project
 
-Create DynamoDB Table
-Create a DynamoDB table to store form submissions:  
+1. DynamoDB Table
 
-Go to DynamoDB in the AWS Console.  
-Click Create table.  
-Name: ContactFormSubmissions.  
-Partition Key: submissionId (String).  
-Use default settings with on-demand billing mode.  
-Click Create table.
+In DynamoDB, create a table:  
+Name: ContactFormSubmissions  
+Partition Key: submissionId (String)  
+Use default settings (on-demand billing)
 
-Create SNS Topic
-Set up an SNS topic for admin notifications:  
 
-Go to SNS in the AWS Console.  
-Click Create topic, select Standard type.  
-Name: ContactFormTopic.  
-Click Create topic.
 
-Add Subscription to the SNS Topic
+2. SNS Topic
 
-In SNS, click Create subscription.  
-Select the ContactFormTopic ARN.  
-Protocol: Email (or SMS if preferred).  
-Endpoint: Enter your email address (or phone number for SMS).  
-Click Create subscription.  
-Confirm the subscription via the email link sent to you.
+In SNS, create a topic:  
+Name: ContactFormTopic (Standard type)
 
-Set Up IAM Role and Permissions for Lambda
-Create an IAM role for Lambda with the necessary permissions.
-Create IAM Policy
 
-Go to IAM in the AWS Console.  
-Click Policies > Create policy.  
-In the JSON editor, paste:
+Add an email subscription and confirm via the email link.
+
+3. IAM Role for Lambda
+
+In IAM, create a policy (ContactFormPermissions):
 
 {
     "Version": "2012-10-17",
@@ -65,10 +50,7 @@ In the JSON editor, paste:
         {
             "Sid": "AllowDynamoDBAndSNSAccess",
             "Effect": "Allow",
-            "Action": [
-                "sns:Publish",
-                "dynamodb:PutItem"
-            ],
+            "Action": ["sns:Publish", "dynamodb:PutItem"],
             "Resource": [
                 "arn:aws:dynamodb:us-east-1:038462762530:table/ContactFormSubmissions",
                 "arn:aws:sns:us-east-1:038462762530:ContactFormTopic"
@@ -78,33 +60,22 @@ In the JSON editor, paste:
 }
 
 
-Click Next, name the policy ContactFormPermissions, and click Create policy.
-
-Create IAM Role
-
-In IAM, click Roles > Create role.  
-Select AWS service > Lambda.  
-Attach policies:  
-AWSLambdaBasicExecutionRole (for logging)  
-ContactFormPermissions (created above)
+Create a role (ContactFormLambdaRole):  
+Type: AWS service > Lambda  
+Attach policies: AWSLambdaBasicExecutionRole, ContactFormPermissions
 
 
-Name the role (e.g., ContactFormLambdaRole) and click Create role.
 
-Deploy Lambda Function
-Deploy the Lambda function to process form submissions.
-Create the Lambda Function
+4. Lambda Function
 
-Go to Lambda in the AWS Console.  
-Click Create function.  
-Choose Author from scratch.  
-Name: contact-form-function.  
-Runtime: Python 3.13.  
-Execution role: Select the existing role ContactFormLambdaRole.  
-Click Create function.
+In Lambda, create a function:  
+Name: contact-form-function  
+Runtime: Python 3.13  
+Role: ContactFormLambdaRole
 
-Add Lambda Function Code
-Copy the following code into the Lambda editor:  
+
+Add this code:
+
 import json
 import boto3
 import logging
@@ -188,93 +159,50 @@ def lambda_handler(event, context):
         }
 
 
-Click Deploy to save. Ensure the DynamoDB table name and SNS topic ARN match your setup.
-
-Test the Lambda Function
-
-In the Lambda console, click Test.  
-Create a test event with the following:
+Deploy and test with:
 
 {
   "body": "{\"name\":\"John Wick\",\"email\":\"john.wick@example.com\",\"message\":\"This is a sample message!\"}"
 }
 
 
-Click Test. You should see a 200 status code with the message "Form submitted successfully!" in the logs.  
-Check your email for an SNS notification with the user’s details.  
-In DynamoDB, go to ContactFormSubmissions and click Explore items to confirm the submission is stored.
+Verify: Check logs, DynamoDB table, and SNS email.
 
-Set Up API Gateway to Trigger Lambda Function
-Set up API Gateway to expose the Lambda function to the internet.  
+5. API Gateway
 
-Go to API Gateway in the AWS Console.  
-Click Create API, select REST API, and click Build.  
-Choose New API, name it, and set the endpoint type to Regional.  
-Click Create API.  
-Click Create resource, name it contactform, and enable CORS.  
-Click Create resource.
-
-Create POST Method
-
-Select the /contactform resource and click Create Method.  
-Method type: POST.  
-Integration type: Lambda Function.  
-Select contact-form-function and enable Lambda proxy integration.  
-Click Create method.
-
-Deploy the API
-
-Click Deploy API, select New stage, name it test, and click Deploy.  
-Note the Invoke URL (e.g., https://<id>.execute-api.us-east-1.amazonaws.com/test/contactform).
-
-Test the API with Postman
-
-Open Postman and create a new HTTP request.  
-Set method to POST.  
-URL: Append /contactform to the Invoke URL (e.g., https://<id>.execute-api.us-east-1.amazonaws.com/test/contactform).  
-Body: Select raw > JSON, and add:
-
-{
-  "name": "Joshua Jackson",
-  "email": "joshuajackson@example.com",
-  "message": "This is a test message!"
-}
+In API Gateway, create a REST API (Regional):  
+Create a resource: /contactform (enable CORS)  
+Add a POST method: Link to contact-form-function with Lambda proxy integration
 
 
-Headers: Ensure Content-Type is application/json.  
-Click Send. You should see a response: "message: Form submitted successfully".
+Deploy to a stage (test) and note the Invoke URL (e.g., https://<id>.execute-api.us-east-1.amazonaws.com/test/contactform).
 
-Set Up S3 Frontend
-Host the static frontend on S3 to serve the contact form.  
+6. S3 Frontend
 
-Go to S3 in the AWS Console.  
-Create a bucket (e.g., contact-form-frontend).  
-Enable Static website hosting in the bucket properties.  
-Upload index.html from the repo to the bucket.  
-Make the bucket public by setting a policy to allow read access (refer to the article for the policy JSON).  
-Update index.html with the API Gateway Invoke URL (e.g., https://<id>.execute-api.us-east-1.amazonaws.com/test/contactform).  
-Re-upload index.html to the bucket.  
-Access the bucket’s website URL (e.g., http://contact-form-frontend.s3-website-us-east-1.amazonaws.com).
+In S3, create a bucket (e.g., contact-form-frontend).  
+Enable Static website hosting.  
+Upload index.html from the repo.  
+Make the bucket public (set a policy for read access).  
+Update index.html with the API Gateway Invoke URL.  
+Re-upload index.html.  
+Access the website URL (e.g., http://contact-form-frontend.s3-website-us-east-1.amazonaws.com).
 
 Usage
 
-Open the S3 website URL in a browser.  
-Fill in the form (name, email, message) and submit.  
+Visit the S3 website URL.  
+Submit the form (name, email, message).  
 Verify:  
-The frontend shows "Form submitted successfully!" (or "Please fill out this field" if a field is empty).  
-The submission is in the ContactFormSubmissions DynamoDB table.  
-You receive an SNS email notification with the user’s details.
+Frontend shows "Form submitted successfully!" (or error if fields are empty)  
+Submission is in DynamoDB (ContactFormSubmissions)  
+SNS email is received
 
 
 
-Files in This Repository
+Files
 
-index.html: Static frontend for the contact form, hosted on S3
-assets/architecture.png: Architecture diagram of the system
+index.html: Frontend for the contact form
+assets/architecture.png: System architecture diagram
 
-Conclusion
-This serverless contact form is efficient, secure, and easy to maintain. Using API Gateway, Lambda, SNS, and DynamoDB, it collects user submissions, stores data safely, and sends real-time notifications. It runs without managing servers, keeping operations simple and costs low. The IAM role ensures each component has only the permissions it needs. This project showcases how AWS serverless tools can build flexible, dependable systems.
-Thank you for following along. I hope this project proves valuable for your serverless projects!
 Connect With Me
 
 LinkedIn
