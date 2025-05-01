@@ -79,31 +79,6 @@ This project implements a serverless contact form system using AWS services: **L
     ]
 }
 
-### **4. Create IAM Role for Lambda**
-
-- Navigate to **IAM** in the AWS Management Console.
-- Create a policy named **ContactFormPermissions** with the following JSON:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "AllowDynamoDBAndSNSAccess",
-      "Effect": "Allow",
-      "Action": [
-        "sns:Publish",
-        "dynamodb:PutItem"
-      ],
-      "Resource": [
-        "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/ContactFormSubmissions",
-        "arn:aws:sns:REGION:ACCOUNT_ID:ContactFormTopic"
-      ]
-    }
-  ]
-}
-```
-
 - Create a **Lambda role**, attaching both:
   - **AWSLambdaBasicExecutionRole**
   - **ContactFormPermissions** (the custom policy above)
