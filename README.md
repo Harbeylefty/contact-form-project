@@ -79,64 +79,110 @@ This project implements a serverless contact form system using AWS services: **L
     ]
 }
 
-Create a Lambda role, attaching AWSLambdaBasicExecutionRole and ContactFormPermissions.
+### **4. Create IAM Role for Lambda**
 
-5. Deploy Lambda Function
-In the Lambda service, create a function named contact-form-function with Python 3.13 runtime.
+- Navigate to **IAM** in the AWS Management Console.
+- Create a policy named **ContactFormPermissions** with the following JSON:
 
-Attach the IAM role created above.
-
-Copy and paste the Lambda function code from the repository’s lambda_function.py (or article).
-
-Update the DynamoDB table name and SNS topic ARN in the code.
-
-Deploy the function.
-
-6. Set Up API Gateway
-In API Gateway, create a REST API (regional endpoint).
-
-Create a resource (e.g., /contactform) with CORS enabled.
-
-Add a POST method, integrating it with the Lambda function (enable Lambda proxy integration).
-
-Deploy the API to a stage (e.g., test) and note the Invoke URL.
-
-Update the frontend’s index.html with the Invoke URL:
-
-7. Test the System
-Test the Lambda function using the AWS Console with a sample payload:
-
+```json
 {
-    "body": "{\"name\":\"John Wick\",\"email\":\"john.wick@example.com\",\"message\":\"This is a sample message!\"}"
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowDynamoDBAndSNSAccess",
+      "Effect": "Allow",
+      "Action": [
+        "sns:Publish",
+        "dynamodb:PutItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/ContactFormSubmissions",
+        "arn:aws:sns:REGION:ACCOUNT_ID:ContactFormTopic"
+      ]
+    }
+  ]
 }
+```
 
-Test the API using Postman:
-Send a POST request to the Invoke URL with JSON body:
+- Create a **Lambda role**, attaching both:
+  - **AWSLambdaBasicExecutionRole**
+  - **ContactFormPermissions** (the custom policy above)
 
+---
+
+### **5. Deploy Lambda Function**
+
+- Go to the **Lambda** service and create a function named **contact-form-function** using the **Python 3.13** runtime.
+- Attach the **IAM role** you created above.
+- Copy and paste the Lambda function code from the repository’s **lambda_function.py** (or article).
+- Update the **DynamoDB table name** and **SNS topic ARN** in the code.
+- **Deploy the function**.
+
+---
+
+### **6. Set Up API Gateway**
+
+- In **API Gateway**, create a **REST API** (regional endpoint).
+- Create a **resource** (e.g., `/contactform`) and enable **CORS**.
+- Add a **POST method**, integrating it with the Lambda function.
+  - Make sure to enable **Lambda proxy integration**.
+- **Deploy the API** to a stage (e.g., `test`) and **note the Invoke URL**.
+- Update the frontend’s **index.html** with the **Invoke URL**, like:
+
+```
+https://<api-id>.execute-api.us-east-1.amazonaws.com/test/contactform
+```
+
+---
+
+### **7. Test the System**
+
+#### **Test with AWS Console**
+
+Use the following sample event in the Lambda test console:
+
+```json
 {
-    "name": "Joshua Jackson",
-    "email": "joshuajackson@example.com",
-    "message": "This is a test message!"
+  "body": "{\"name\":\"John Wick\",\"email\":\"john.wick@example.com\",\"message\":\"This is a sample message!\"}"
 }
+```
 
-Verify Content-Type: application/json in headers.
+#### **Test with Postman**
 
-Upload the updated index.html to S3 and test the form via the website.
+- Send a **POST** request to the API’s **Invoke URL** with the following **JSON body**:
 
-Check DynamoDB for stored submissions and your email for SNS notifications.
+```json
+{
+  "name": "Joshua Jackson",
+  "email": "joshuajackson@example.com",
+  "message": "This is a test message!"
+}
+```
 
-Usage
-Access the contact form via the S3-hosted website.
+- Set the **header**:
 
-Submit the form with name, email, and message.
+```
+Content-Type: application/json
+```
 
-Receive a "Form submitted successfully" message on valid submissions.
+#### **Final Checks**
 
-Verify data in the DynamoDB table (ContactFormSubmissions).
+- Upload the updated **index.html** to your **S3 bucket** and test the form via your website.
+- Check **DynamoDB** for stored submissions.
+- Check your **email** for **SNS notifications**.
 
-Check email for SNS notifications with submission details.
+---
 
-License
-This project is licensed under the MIT License.
+### **Usage**
 
+- Access the contact form via the **S3-hosted website**.
+- Submit the form with **name**, **email**, and **message**.
+- Receive a **"Form submitted successfully"** message.
+- Verify data in the **DynamoDB** table (**ContactFormSubmissions**).
+- Check your **email** for **SNS notifications** with submission details.
 
+---
+
+### **License**
+
+This project is licensed under the **MIT License**.
