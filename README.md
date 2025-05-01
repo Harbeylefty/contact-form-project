@@ -18,10 +18,9 @@ This project implements a serverless contact form system using AWS services: **L
 
 ## Technologies Used
 
-- **AWS Services**: Lambda, API Gateway, DynamoDB, SNS, IAM, S3  
+- **AWS Services**: Lambda, API Gateway, DynamoDB, SNS, IAM
 - **Programming Language**: Python 3.13 (for Lambda function)  
-- **Frontend**: HTML (static site hosted on S3)  
-- **Tools**: AWS Management Console, Postman (for testing)
+- **Frontend**: HTML 
 
 ---
 
@@ -92,7 +91,7 @@ This project implements a serverless contact form system using AWS services: **L
 
 - Go to the **Lambda** service and create a function named **contact-form-function** using the **Python 3.13** runtime.
 - Attach the **IAM role** you created above.
-- Copy and paste the Lambda function code from the repository’s **lambda_function.py** (or article).
+- Copy and paste the Lambda function code from the repository’s **lambda_function.py** 
 - Update the **DynamoDB table name** and **SNS topic ARN** in the code.
 - **Deploy the function**.
 
